@@ -13,22 +13,27 @@ jobs:
       - name: Set up Build Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm python3 gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm python3 gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu dwarves
 
       - name: Clone Motorola Kernel
         run: |
           git clone --depth=1 -b android-14-release-u2ubs34.44-86-7 https://github.com/MotorolaMobilityLLC/kernel-msm kernel-source
 
-      - name: Integrate KernelSU
+      - name: Manual KernelSU Wiring
         run: |
           cd kernel-source
+          # Download KernelSU source directly into the drivers folder
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+          
+          # Force KernelSU config into the GKI config before merging
+          echo "CONFIG_KSU=y" >> arch/arm64/configs/gki_defconfig
+          echo "CONFIG_OVERLAY_FS=y" >> arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS=n" >> arch/arm64/configs/gki_defconfig
 
       - name: Build Kernel
         run: |
           cd kernel-source
           
-          # Environment variables for ARM64 Cross-Compilation
           export ARCH=arm64
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
@@ -37,20 +42,18 @@ jobs:
           
           mkdir -p out
 
-          # MERGE: Combine the Google GKI base with the Motorola Boston hardware fragment
-          # This creates the final .config file required for 'make'
+          # MERGE: GKI + Boston
           bash scripts/kconfig/merge_config.sh -O out \
             arch/arm64/configs/gki_defconfig \
             arch/arm64/configs/vendor/ext_config/moto-parrot-boston.config
 
-          # FORGE: Execute the actual compilation
-          # -j$(nproc) uses all available CPU cores for speed
-          make O=out -j$(nproc)
+          # FORGE: The 'LLVM=1' flag is the secret sauce for Android 14 GKI kernels
+          make O=out LLVM=1 LLVM_IAS=1 KCFLAGS="-Wno-error" -j$(nproc)
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Ghost-Kernel-Result
           path: |
-            kernel-source/out/arch/arch/arm64/boot/Image.gz
-            kernel-source/out/arch/arch/arm64/boot/dtbo.img
+            kernel-source/out/arch/arm64/boot/Image.gz
+            kernel-source/out/arch/arm64/boot/dtbo.img
