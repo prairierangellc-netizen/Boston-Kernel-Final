@@ -16,7 +16,7 @@ jobs:
       - name: Build Kernel
         uses: Diva-Room/KernelSU_Action@main
         with:
-          kernel_url: 'https://github.com/MotorolaMobilityLLC/kernel-msm'
+          kernel_url: 'https://github.com/MotorolaMobilityLLC/kernel-msm'    
           kernel_branch: 'master'
           config: 'vendor/boston_defconfig'
           arch: 'arm64'
