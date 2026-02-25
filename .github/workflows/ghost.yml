@@ -16,7 +16,7 @@ jobs:
 
       - name: Clone Motorola Kernel
         run: |
-          git clone --depth=1 -b master https://github.com/MotorolaMobilityLLC/kernel-msm kernel-source
+          git clone --depth=1 -b S3SJS32.42-78-10 https://github.com/MotorolaMobilityLLC/kernel-msm kernel-source
 
       - name: Integrate KernelSU
         run: |
