@@ -13,7 +13,7 @@ jobs:
       - name: Set up Build Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm python3
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm python3 gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
       - name: Clone Motorola Kernel
         run: |
@@ -33,8 +33,7 @@ jobs:
           export CC=clang
           export LD=ld.lld
           
-          # This creates the configuration. If boston_defconfig isn't exact, 
-          # it uses the generic msm vendor config as fallback.
+          # This creates the configuration.
           make O=out vendor/boston_defconfig || make O=out vendor/qti-quin-gvm-v2_defconfig
           
           # The actual compilation
