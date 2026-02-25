@@ -9,13 +9,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Kernel
-        uses: lss4/KernelSU_Action_pstar@main
-        with:
-          kernel_url: 'https://github.com/MotorolaMobilityLLC/kernel-msm'
-          kernel_branch: 'master'
-          config: 'vendor/boston_defconfig'
-          arch: 'arm64'
-          ksu: true
-          ksu_version: 'main'
-          boot_img_url: 'https://filebin.net/cebns0iwysbn1ug8'
+      - name: Set up Build Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm
+
+      - name: Clone Motorola Kernel
+        run: |
+          git clone --depth=1 -b master https://github.com/MotorolaMobilityLLC/kernel-msm kernel-source
+
+      - name: Integrate KernelSU
+        run: |
+          cd kernel-source
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
