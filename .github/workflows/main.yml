@@ -1,0 +1,25 @@
+name: Build Boston Kernel
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Kernel
+        uses: Diva-Room/KernelSU_Action@main
+        with:
+          kernel_url: 'https://github.com/MotorolaMobilityLLC/kernel-msm'
+          kernel_branch: 'master'
+          config: 'vendor/boston_defconfig'
+          arch: 'arm64'
+          ksu: true
+          ksu_version: 'main'
+          boot_img_url: 'https://filebin.net/cebns0iwysbn1ug8'
