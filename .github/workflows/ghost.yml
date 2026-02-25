@@ -33,10 +33,12 @@ jobs:
           export CC=clang
           export LD=ld.lld
           
-          # This creates the configuration.
-          make O=out vendor/boston_defconfig || make O=out vendor/qti-quin-gvm-v2_defconfig
+          # AUTO-DETECT CONFIG: This looks for anything matching 'boston' or 'vendor'
+          CONF=$(find arch/arm64/configs -name "*boston*" | head -n 1 | sed 's|arch/arm64/configs/||')
+          if [ -z "$CONF" ]; then CONF="vendor/qti-quin-gvm-v2_defconfig"; fi
           
-          # The actual compilation
+          echo "Selected Config: $CONF"
+          make O=out "$CONF"
           make O=out -j$(nproc)
 
       - name: Upload Kernel Artifact
