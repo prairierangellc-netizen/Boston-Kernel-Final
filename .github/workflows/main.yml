@@ -22,4 +22,4 @@ jobs:
           arch: 'arm64'
           ksu: true
           ksu_version: 'main'
-          boot_img_url: 'https://filebin.net/cebns0iwysbn1ug8'
+          boot_img_url: 'https://filebin.net/cebns0iwysbn1ug8'# trigger 
