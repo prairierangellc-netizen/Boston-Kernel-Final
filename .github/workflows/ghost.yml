@@ -27,18 +27,24 @@ jobs:
       - name: Build Kernel
         run: |
           cd kernel-source
+          
+          # Environment variables for ARM64 Cross-Compilation
           export ARCH=arm64
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=clang
           export LD=ld.lld
           
-          # AUTO-DETECT CONFIG: This looks for anything matching 'boston' or 'vendor'
-          CONF=$(find arch/arm64/configs -name "*boston*" | head -n 1 | sed 's|arch/arm64/configs/||')
-          if [ -z "$CONF" ]; then CONF="vendor/qti-quin-gvm-v2_defconfig"; fi
-          
-          echo "Selected Config: $CONF"
-          make O=out "$CONF"
+          mkdir -p out
+
+          # MERGE: Combine the Google GKI base with the Motorola Boston hardware fragment
+          # This creates the final .config file required for 'make'
+          bash scripts/kconfig/merge_config.sh -O out \
+            arch/arm64/configs/gki_defconfig \
+            arch/arm64/configs/vendor/ext_config/moto-parrot-boston.config
+
+          # FORGE: Execute the actual compilation
+          # -j$(nproc) uses all available CPU cores for speed
           make O=out -j$(nproc)
 
       - name: Upload Kernel Artifact
@@ -46,5 +52,5 @@ jobs:
         with:
           name: Ghost-Kernel-Result
           path: |
-            kernel-source/out/arch/arm64/boot/Image.gz
-            kernel-source/out/arch/arm64/boot/dtbo.img
+            kernel-source/out/arch/arch/arm64/boot/Image.gz
+            kernel-source/out/arch/arch/arm64/boot/dtbo.img
